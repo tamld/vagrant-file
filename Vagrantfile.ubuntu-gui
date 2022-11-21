@@ -30,23 +30,23 @@ Vagrant.configure("2") do |config|
   end
   # to make synced folder works.
   config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
-
+  config.vm.provision "shell", privileged: false, inline: <<-SCRIPT
   # Update repositories & upgrade 
-  config.vm.provision :shell, inline: "sudo apt update -y && sudo apt -y full-upgrade"
-
+  # sudo apt update -y && sudo apt -y full-upgrade
   # Install zsh, p10k themes, plugins
-  config.vm.provision :shell, inline: " wget -qO - https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
+  wget -qO - https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash
 
   # Install unattended  Ubuntu / Debian-based Apps
-  # config.vm.provision :shell, inline: " wget -qO - https://gist.githubusercontent.com/tamld/9c1f11fcf8932bd8b298ee562118da90/raw/install-Linux-APP.sh | bash"
+  # wget -qO - https://gist.githubusercontent.com/tamld/9c1f11fcf8932bd8b298ee562118da90/raw/install-Linux-APP.sh | bash
   
   # Add desktop environment
-  config.vm.provision :shell, inline: "sudo apt install -y --no-install-recommends ubuntu-desktop"
-  config.vm.provision :shell, inline: "sudo apt install -y --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11"
+  sudo apt install -y --no-install-recommends ubuntu-desktop
+  sudo apt install -y --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
 
   # Add `vagrant` to Administrator / sudo Group
-  config.vm.provision :shell, inline: "sudo usermod -a -G sudo vagrant"
+  sudo usermod -a -G sudo vagrant
 
   # Restart
-  config.vm.provision :shell, inline: "sudo shutdown -r now"
+  sudo shutdown -r now
+  SCRIPT
 end
