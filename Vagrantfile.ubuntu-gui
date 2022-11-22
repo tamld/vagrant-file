@@ -35,29 +35,30 @@ Vagrant.configure("2") do |config|
   # sudo apt update -y && sudo apt -y full-upgrade
   # Install zsh, p10k themes, plugins
   wget -qO - https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash
-
+  #Add desktop environment
+  sudo apt install -y --no-install-recommends ubuntu-desktop
+  sudo apt install -y --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
+  
   # Install unattended  Ubuntu / Debian-based Apps
   # wget -qO - https://gist.githubusercontent.com/tamld/9c1f11fcf8932bd8b298ee562118da90/raw/install-Linux-APP.sh | bash
 
   # Install Display Manager (lightdm or slim)
-    # sudo apt install lightdm
-    # sudo apt install slim
-  #Show current display manager
-    # systemctl status display-manager.service
+  sudo apt install -y lightdm
+  # sudo apt install -y slim
+  # Show current display manager
+  # systemctl status display-manager.service
+  
   #Set display manager
   #sudo dpkg-reconfigure gdm3
-  #Install DE 
-    # Vanilla GNOME
-  #sudo apt install vanilla-gnome-desktop vanilla-gnome-default-settings
-    # LXDE
-  # sudo apt install lxde
-    #XFCE
-  #sudo apt-get install xfce4-session xfce4-goodies
   
-  # Add desktop environment
-  sudo apt install -y --no-install-recommends ubuntu-desktop
-  sudo apt install -y --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
-
+  #Install DE 
+  ### Vanilla GNOME
+  # sudo apt install -y vanilla-gnome-desktop vanilla-gnome-default-settings
+  ### LXDE
+  # sudo apt install -y lxde
+  ###XFCE
+  sudo apt-get -y install xfce4-session xfce4-goodies
+  
   # Add `vagrant` to Administrator / sudo Group
   sudo usermod -a -G sudo vagrant
 
