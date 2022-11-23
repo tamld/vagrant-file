@@ -1,0 +1,61 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.require_version ">= 2.2.8"
+HOST_NAME = "snipeit"
+V_NAME = "snipeit"
+IMAGE_NAME = "bento/ubuntu-20.04"
+USER_NAME = "vagrant"
+USER_PASSWORD = "vagrant"
+RAM_SIZE = "2048"
+NUMBER_OF_CPU = 2
+DISK_SIZE = "20GB"
+Vagrant.configure("2") do |config|
+    config.ssh.username = USER_NAME
+    config.ssh.password = USER_PASSWORD
+    config.vm.network "public_network"
+    config.vm.provider "virtualbox" do |v|
+		v.name = V_NAME
+		v.memory = RAM_SIZE
+		v.cpus = NUMBER_OF_CPU
+		v.customize ["modifyvm", :id, "--hwvirtex", "on"]                   #Enable hwvirtex
+        v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]        #Enbale natdnshostresolve
+        v.customize ['modifyvm', :id, '--clipboard-mode', 'bidirectional']  #Enable clipboard mode copy
+        v.customize ['modifyvm', :id, '--draganddrop', 'bidirectional']     #Enable draganddrop option
+	  end
+  config.vm.define HOST_NAME do |h|
+		h.vm.hostname = HOST_NAME                                            #Set Displayname in vagrant cmlet
+        h.vm.box = IMAGE_NAME
+		h.vm.disk :disk, size: DISK_SIZE, primary: true
+  end
+  config.vm.provision "shell", inline: <<-SCRIPT
+  #Install prerequisites packages
+  apt-get update \
+  && apt-get -y upgrade
+  apt-get install -y apt-utils \
+  wget \
+  git \
+  curl \
+  tree \
+  locales \
+  nano \
+  net-tools \
+  && timedatectl set-timezone Asia/Ho_Chi_Minh
+  #Remove previous docker version
+  apt-get remove -y docker docker-engine docker.io containerd runc
+  #Install Docker, docker-compose
+  apt-get install -y ca-certificates \
+  curl \
+  gnupg \
+  lsb-release
+  mkdir -p /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  apt-get update
+  apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose docker-compose-plugin
+  #Manage Docker as a non-root user
+  groupadd docker
+  usermod -aG docker vagrant
+  SCRIPT
+end
