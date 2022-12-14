@@ -12,21 +12,24 @@ DISK_SIZE = "20GB"
 Vagrant.configure("2") do |config|
     config.ssh.username = USER_NAME
     config.ssh.password = USER_PASSWORD
-    config.vm.network "public_network"
+    config.vm.network "public_network", bridge: "enp5s0f1"                  #Mapping LAN Bridge
     config.vm.provider "virtualbox" do |v|
 		v.name = V_NAME
 		v.memory = RAM_SIZE
 		v.cpus = NUMBER_OF_CPU
-		v.customize ["modifyvm", :id, "--hwvirtex", "on"]                   #Enable hwvirtex
+		v.customize ["modifyvm", :id, "--hwvirtex", "on"]                       #Enable hwvirtex
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]        #Enbale natdnshostresolve
         v.customize ['modifyvm', :id, '--clipboard-mode', 'bidirectional']  #Enable clipboard mode copy
         v.customize ['modifyvm', :id, '--draganddrop', 'bidirectional']     #Enable draganddrop option
 	  end
   config.vm.define HOST_NAME do |h|
-		h.vm.hostname = HOST_NAME                                            #Set Displayname in vagrant cmlet
+		h.vm.hostname = HOST_NAME                                               #Set Displayname in vagrant cmlet
         h.vm.box = IMAGE_NAME
 		h.vm.disk :disk, size: DISK_SIZE, primary: true
   end
+  id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")
+  config.vm.provision "copy ssh public key", type: "shell",
+    inline: "echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys"
   config.vm.provision "shell", inline: <<-SCRIPT
   #Install prerequisites packages
   apt-get update \
