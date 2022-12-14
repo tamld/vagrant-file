@@ -60,5 +60,7 @@ Vagrant.configure("2") do |config|
   #Manage Docker as a non-root user
   groupadd docker
   usermod -aG docker vagrant
+  #Install zsh
+  su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
   SCRIPT
 end
