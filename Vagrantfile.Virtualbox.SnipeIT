@@ -28,7 +28,7 @@ Vagrant.configure("2") do |config|
 		h.vm.disk :disk, size: DISK_SIZE, primary: true
   end
   id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")                     #Copy the public key to VM
-  config.vm.provision "copy ssh public key", type: "shell", inline          #Parse the public key with the VM authorized_keys
+  config.vm.provision "copy ssh public key", type: "shell",                 #Parse the public key with the VM authorized_keys
     inline: "if grep -Fxq \"#{id_rsa_pub}\" /home/vagrant/.ssh/authorized_keys
     then
         echo ssh public key already exists
