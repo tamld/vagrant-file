@@ -148,11 +148,24 @@ end
   su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
   #Git clone Snipe-IT Project from github
   git clone https://github.com/snipe/snipe-it.git && cd snipe-it
+  chown vagrant:vagrant -R /home/vagrant/snipe-it
+  # Append line after match
+  # sed  '/\[option\]/a Hello World' input
+  # Insert line before match
+  # sed  '/\[option\]/i Hello World' input
   sed -i s/Dockerfile.alpine/Dockerfile/ docker-compose.yml
   sed -i s/8000:80/80:80/ docker-compose.yml
-  sed '8 i     container_name: snipeit' docker-compose.yml
-  sed '24 i     container_name: mariadb' docker-compose.yml
+  sed -i '/  mariadb:/a\    container_name: mariadb' docker-compose.yml
+  sed -i '/  redis:/a\    container_name: redis' docker-compose.yml
+  sed -i '/  mailhog:/a\    container_name: mailhog' docker-compose.yml
+  sed -i s/develop/production/ .env.docker
+  sed -i s/UTC/Asia\\/\\Ho_Chi_Minh/ .env.docker
   #Get eth1 (bridged) IP Address
-  ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+  ip=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+  sed -i s/localhost:8000/$ip/ .env.docker
+  sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' .env.docker
+  sed -i '/APP_KEY=base64/d' .env.docker
+  key=$(docker-compose run --rm snipeit php artisan key:generate --show)
+  sed -i '/APP_URL/i APP_KEY=$key' .env.docker
   SCRIPT
 end
