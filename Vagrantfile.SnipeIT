@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
       h.vm.hostname  = HOST_NAME
       h.disksize.size = DISK_SIZE
       # h.vm.disk :disk, size: DISK_SIZE, primary: true
-      h.vm.network "public_network", bridge: "enp5s0f1"          #eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
+      h.vm.network "public_network", bridge: []          #eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
       # h.vm.network :forwarded_port, guest: 90, host: 9090
       # h.vm.network :private_network, ip: "22.22.22.11"
     end
@@ -38,13 +38,20 @@ Vagrant.configure("2") do |config|
       v.vmx['memsize'] = RAM_SIZE
       v.vmx['numvcpus'] = NUMBER_OF_CPU                             # two processor cores reserved for vm
       v.vmx['cpuid.coresPerSocket'] = CORE_OF_CPU                   # one socket reserved for vm [1(socket)*2(CPU)=2(CPU)]
-      # v.vmx["ethernet0.connectionType"] = "nat"
-      # v.vmx["ethernet0.connectionType"] = "bridged"
-      # v.vmx["ethernet1.generatedAddress"] = nil                      #Add second network adapter
-      # v.vmx["ethernet1.addressType"] = "static"
-      # v.vmx["ethernet1.present"] = "TRUE"
-      # v.vmx["ethernet1.connectionType"] = "bridged"
-      # v.vmx["ethernet1.address"] = "00:0C:29:DB:08:02"
+      # v.vmx["ethernet0.addresstype"] = "generated"
+      # v.vmx["ethernet0.connectiontype"] = "nat"
+      # v.vmx["ethernet0.present"] = "TRUE"
+      # v.vmx["ethernet0.virtualdev"] = "e1000"
+      # # v.vmx["ethernet0.pcislotnumber"] = "32"
+      v.vmx["ethernet1.addresstype"] = "generated"
+      v.vmx["ethernet1.connectiontype"] = "bridged"
+      v.vmx["ethernet1.present"] = "TRUE"
+      v.vmx["ethernet1.virtualdev"] = "e1000"
+      # v.vmx["ethernet1.pcislotnumber"] = "33"
+      # v.vmx["ethernet2.addresstype"] = "generated"
+      # v.vmx["ethernet2.connectiontype"] = "bridged"
+      # v.vmx["ethernet2.present"] = "TRUE"
+      # v.vmx["ethernet2.virtualdev"] = "e1000"
       # v.vmx['virtualHW.version'] = '16'                   # choose 16 as 'vmware_desktop' version
       # v.vmx['mks.enable3d'] = true                        # enable 3D acceleration
       # v.vmx['vmci0.present'] = true                       # enable Virtual Machine Configuration Interface
@@ -64,7 +71,7 @@ Vagrant.configure("2") do |config|
       # v.vmx['nvme0.present'] = true                       # select nvme for primary drive
       # v.vmx['usb.present'] = true                         # enable USB controller
       # v.vmx['ehci.present'] = true                        # enable USB controller
-      v.vmx['svga.graphicsMemoryKB'] = '262144'           # reserve 256MB for GPU
+      v.vmx['svga.graphicsMemoryKB'] = '262144'           # reserve 256MB for GPU      cpuid.corespersocket = "2"      displayname = "snipeit"
     end
 end
 
@@ -98,46 +105,54 @@ end
 #   config.notify_forwarder.enable = true
 ################################################################
 # Copy public key
-  # id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")                     #Copy the public key to VM
-  # config.vm.provision "copy ssh public key", type: "shell",                 #Parse the public key with the VM authorized_keys
-  #   inline: "if grep -Fxq \"#{id_rsa_pub}\" /home/vagrant/.ssh/authorized_keys
-  #   then
-  #       echo ssh public key already exists
-  #   else
-  #     echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys
-  #   fi"
+  id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")                     #Copy the public key to VM
+  config.vm.provision "copy ssh public key", type: "shell",                 #Parse the public key with the VM authorized_keys
+    inline: "if grep -Fxq \"#{id_rsa_pub}\" /home/vagrant/.ssh/authorized_keys
+    then
+        echo ssh public key already exists
+    else
+      echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys
+    fi"
 # Provision by shell script
-  # config.vm.provision "shell", inline: <<-SCRIPT
-  # #Install prerequisites packages
-  # apt-get update \
-  # && apt-get -y upgrade
-  # apt-get install -y apt-utils \
-  # wget \
-  # git \
-  # curl \
-  # tree \
-  # locales \
-  # nano \
-  # net-tools \
-  # && timedatectl set-timezone Asia/Ho_Chi_Minh
-  # #Remove previous docker version
-  # apt-get remove -y docker docker-engine docker.io containerd runc
-  # #Install Docker, docker-compose
-  # apt-get install -y ca-certificates \
-  # curl \
-  # gnupg \
-  # lsb-release
-  # mkdir -p /etc/apt/keyrings
-  # curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  # echo \
-  # "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  # $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  # apt-get update
-  # apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose docker-compose-plugin
-  # #Manage Docker as a non-root user
-  # groupadd docker
-  # usermod -aG docker vagrant
-  # #Install zsh with vagrant user instead of root
-  # su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
-  # SCRIPT
+  config.vm.provision "shell", inline: <<-SCRIPT
+  #Install prerequisites packages
+  apt-get update \
+  && apt-get -y upgrade
+  apt-get install -y apt-utils \
+  wget \
+  git \
+  curl \
+  tree \
+  locales \
+  nano \
+  net-tools \
+  && timedatectl set-timezone Asia/Ho_Chi_Minh
+  #Remove previous docker version
+  apt-get remove -y docker docker-engine docker.io containerd runc
+  #Install Docker, docker-compose
+  apt-get install -y ca-certificates \
+  curl \
+  gnupg \
+  lsb-release
+  mkdir -p /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  apt-get update
+  apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose docker-compose-plugin
+  #Manage Docker as a non-root user
+  groupadd docker
+  usermod -aG docker vagrant
+  #Install zsh with vagrant user instead of root
+  su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
+  #Git clone Snipe-IT Project from github
+  git clone https://github.com/snipe/snipe-it.git && cd snipe-it
+  sed -i s/Dockerfile.alpine/Dockerfile/ docker-compose.yml
+  sed -i s/8000:80/80:80/ docker-compose.yml
+  sed '8 i     container_name: snipeit' docker-compose.yml
+  sed '24 i     container_name: mariadb' docker-compose.yml
+  #Get eth1 (bridged) IP Address
+  ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+  SCRIPT
 end
