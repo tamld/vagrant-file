@@ -107,14 +107,14 @@ end
 #   config.notify_forwarder.enable = true
 ################################################################
 # Copy public key
-  id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")                     #Copy the public key to VM
-  config.vm.provision "copy ssh public key", type: "shell",                 #Parse the public key with the VM authorized_keys
-    inline: "if grep -Fxq \"#{id_rsa_pub}\" /home/vagrant/.ssh/authorized_keys
-    then
-        echo ssh public key already exists
-    else
-      echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys
-    fi"
+  # id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")                     #Copy the public key to VM
+  # config.vm.provision "copy ssh public key", type: "shell",                 #Parse the public key with the VM authorized_keys
+  #   inline: "if grep -Fxq \"#{id_rsa_pub}\" /home/vagrant/.ssh/authorized_keys
+  #   then
+  #       echo ssh public key already exists
+  #   else
+  #     echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys
+  #   fi"
 # Provision by shell script
   config.vm.provision "shell", inline: <<-SCRIPT
   #Install prerequisites packages
@@ -149,36 +149,37 @@ end
   # #Install zsh with vagrant user instead of root
   # su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
   #Git clone Snipe-IT Project from github
-  git clone https://github.com/snipe/snipe-it.git
+  # git clone https://github.com/snipe/snipe-it.git
   cd snipe-it
-  whoami
-  pwd
   # Append line after match
   # sed  '/\[option\]/a Hello World' input
   # Insert line before match
   # sed  '/\[option\]/i Hello World' input
-  sed -i 's/Dockerfile.alpine/Dockerfile/' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i 's/8000:80/80:80/' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/mariadb:/a\\    container_name: mariadb' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/redis:/a\\    container_name: redis' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/mailhog:/a\\    container_name: mailhog' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/db: {}/a\\  log: {}' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i "s/develop/production/" /home/vagrant/snipe-it/.env.docker
-  sed -i "s/UTC/Asia\\/\\Ho_Chi_Minh/" /home/vagrant/snipe-it/.env.docker
+  # sed -i 's/Dockerfile.alpine/Dockerfile/' /home/vagrant/snipe-it/docker-compose.yml
+  # sed -i 's/8000:80/80:80/' /home/vagrant/snipe-it/docker-compose.yml
+  # sed -i '/mariadb:/a\\    container_name: mariadb' /home/vagrant/snipe-it/docker-compose.yml
+  # sed -i '/redis:/a\\    container_name: redis' /home/vagrant/snipe-it/docker-compose.yml
+  # sed -i '/mailhog:/a\\    container_name: mailhog' /home/vagrant/snipe-it/docker-compose.yml
+  # sed -i '/db: {}/a\\  log: {}' /home/vagrant/snipe-it/docker-compose.yml
+  # sed -i "s/develop/production/" /home/vagrant/snipe-it/.env.docker
+  # sed -i "s/UTC/Asia\\/\\Ho_Chi_Minh/" /home/vagrant/snipe-it/.env.docker
   #Get eth1 (bridged) IP Address
-  # ip=$(ip route get 8.8.8.8 | sed  -nE '1{s/.*?src (\S+) .*/\1/;p}')
-  ip=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+  # ip="$(ip a | grep eth1 | grep inet | sed -e 's/^.*inet //' -e 's/\/.*$//')"
+  # echo Snipe IT ip address is: $ip
+  # sed -i "s/localhost:8000/$ip/" /home/vagrant/snipe-it/.env.docker
+  # sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' /home/vagrant/snipe-it/.env.docker
+  # sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
+  # docker compose -f /home/vagrant/snipe-it/docker-compose.yml up -d --build
+  # key="$(docker exec -it snipeit php artisan key:generate --show)"
+  # echo key is: $key
+  # sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
+  # sed -i "/APP_URL/i APP_KEY=$key" /home/vagrant/snipe-it/.env.docker
+  # docker-compose -f /home/vagrant/snipe-it/docker-compose.yml down
+  # docker-compose -f /home/vagrant/snipe-it/docker-compose.yml up -d
+  # chown vagrant:vagrant -R /home/vagrant/snipe-it
+  ######Config for variable ip and key
+  # ip=$(ip a | grep eth1 | grep inet | sed -e 's/^.*inet //' -e 's/\/.*$//')
   echo Snipe IT ip address is: $ip
-  sed -i "s/localhost:8000/$ip/" /home/vagrant/snipe-it/.env.docker
-  sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' /home/vagrant/snipe-it/.env.docker
-  sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
-  docker compose -f /home/vagrant/snipe-it/docker-compose.yml up -d --build
-  key="$(docker exec -it snipeit php artisan key:generate --show)"
-  echo key is: $key
-  sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
-  sed -i "/APP_URL/i APP_KEY=$key" /home/vagrant/snipe-it/.env.docker
-  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml down && docker-compose -f /home/vagrant/snipe-it/docker-compose.yml up -d
-  chown vagrant:vagrant -R /home/vagrant/snipe-it
-  timeout 10 echo You can access the $hostname by IP: $ip
+  echo You can access the $hostname by IP: $ip
   SCRIPT
 end
