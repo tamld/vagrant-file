@@ -152,7 +152,7 @@ end
   #Git clone Snipe-IT Project from github
   git clone https://github.com/snipe/snipe-it.git
   cd snipe-it
-  Append line after match
+  ###Append line after match
   sed  '/\[option\]/a Hello World' input
   # Sed insert for .env.docker and docker-compose
   sed  '/\[option\]/i Hello World' input
