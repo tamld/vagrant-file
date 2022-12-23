@@ -78,7 +78,6 @@ config.vm.provider 'virtualbox' do |vb|
   vb.name = HOST_NAME
   vb.customize ['modifyvm', :id, '--memory', RAM_SIZE]
   vb.customize ['modifyvm', :id, '--cpus', NUMBER_OF_CPU]
-  vb.customize ["modifyvm", :id, "--disk", DISK_SIZE]
   # vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
   # vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   # vb.customize ["modifyvm", :id, "--nic9", "hostonlynet", "--host-only-net9=HostOnly"]
@@ -163,13 +162,17 @@ end
   sed -i "s/localhost:8000/$ip/" /home/vagrant/snipe-it/.env.docker
   sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' /home/vagrant/snipe-it/.env.docker
   sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
-  echo key is: $key
-  key=$(docker-compose -f /home/vagrant/snipe-it/docker-compose.yml run --rm snipeit php artisan key:generate --show)
+  ### build the image snipeit before genera APP_KEY
+  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml run --rm snipeit
+  key=$(docker-compose -f /home/vagrant/snipe-it/docker-compose.yml run --rm snipeit php artisan key:generate --show )
   echo $key
   sed -i "/APP_URL/i APP_KEY=$key" /home/vagrant/snipe-it/.env.docker
   docker-compose -f /home/vagrant/snipe-it/docker-compose.yml down
   docker-compose -f /home/vagrant/snipe-it/docker-compose.yml up -d
   chown vagrant:vagrant -R /home/vagrant/snipe-it
+  docker exec -it snipeit chown -R docker ./storage/logs/
+  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml stop
+  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml up -d
   echo "SnipeIT has APP_KEY=:$key"
   echo "SnipeIT app can access via IP: $ip"
   SCRIPT
