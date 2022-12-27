@@ -34,14 +34,32 @@
   su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
 
 ### Download SnipeIT
-git clone https://github.com/snipe/snipe-it.git
-sudo chown vagrant:vagrant -R snipe-it
-cd snipe-it
+if [ -d "snipe-it" ]; then
+  echo Snipe-IT is exist
+  cd snipe-it
+  docker-compose down
+  yes | docker network prune
+  yes | docker volume prune
+  cd .. & rm -rf snipe-it
+  git clone https://github.com/snipe/snipe-it.git
+  sudo chown vagrant:vagrant -R snipe-it
+else
+  echo "Folder does not exist"
+  git clone https://github.com/snipe/snipe-it.git
+  sudo chown vagrant:vagrant -R snipe-it
+fi
 sed -i 's/Dockerfile.alpine/Dockerfile/' docker-compose.yml
 sed -i 's/8000:80/80:80/' docker-compose.yml
+sed -i '/\    container_name: snipeit/a\    restart: always' docker-compose.yml
+mkdir db-backup
+sed -i '/var/www/html/storage/logs/a\    - /home/vagrant/snipe-it/db-backup/:/var/lib/snipeit/dumps/' docker-compose.yml
+sed -i 's/.logs/var/\    - /home/vagrant/snipe-it/logs/' docker-compose.yml
 sed -i '/\  mariadb:/a\    container_name: mariadb' docker-compose.yml
+sed -i '/\    container_name: mariadb/a\    restart: always' docker-compose.yml
 sed -i '/\  redis:/a\    container_name: redis' docker-compose.yml
+sed -i '/\    container_name: redis/a\    restart: always' docker-compose.yml
 sed -i '/\  mailhog:/a\    container_name: mailhog' docker-compose.yml
+sed -i '/\    container_name: mailhog/a\    restart: always' docker-compose.yml
 # sed -i '/db: {}/a\  log: {}' docker-compose.yml
 sed -i 's/develop/production/' .env.docker
 sed -i 's/UTC/Asia\/\Ho_Chi_Minh/' .env.docker
