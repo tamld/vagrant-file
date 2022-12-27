@@ -4,8 +4,8 @@
 Vagrant.require_version ">= 2.2.8"
 HOST_NAME = "snipeit"
 IMAGE_NAME = "bento/ubuntu-20.04"
-RAM_SIZE = "4096"
-NUMBER_OF_CPU = 2
+RAM_SIZE = "8192"
+NUMBER_OF_CPU = 4
 CORE_OF_CPU = 2
 DISK_SIZE = "40GB"
 USER_NAME = "vagrant"
@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
       h.vm.hostname  = HOST_NAME
       h.disksize.size = DISK_SIZE                               #This might not set by define size, truely by default configuration
       # h.vm.disk :disk, size: DISK_SIZE, primary: true
-      h.vm.network "public_network", bridge: 'wlp1s0'          #eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
+      h.vm.network "public_network", bridge: 'enp5s0f1'          #eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
       # h.vm.network :forwarded_port, guest: 90, host: 9090
       # h.vm.network :private_network, ip: "22.22.22.11"
     end
@@ -149,30 +149,33 @@ end
   su -c -m "vagrant" "wget -qO- https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh | bash"
   ###Git clone Snipe-IT Project from github
   git clone https://github.com/snipe/snipe-it.git
-  sed -i 's/Dockerfile.alpine/Dockerfile/' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i 's/8000:80/80:80/' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/\\  mariadb:/a\\    container_name: mariadb' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/\\  redis:/a\\    container_name: redis' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/\\  mailhog:/a\\    container_name: mailhog' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i '/db: {}/a\\  log: {}' /home/vagrant/snipe-it/docker-compose.yml
-  sed -i "s/develop/production/" /home/vagrant/snipe-it/.env.docker
-  sed -i "s/UTC/Asia\\/\\Ho_Chi_Minh/" /home/vagrant/snipe-it/.env.docker
+  chown vagrant:vagrant -R /home/vagrant/snipe-it
+  cd snipe-it
+  sed -i 's/Dockerfile.alpine/Dockerfile/' docker-compose.yml
+  sed -i 's/8000:80/80:80/' docker-compose.yml
+  sed -i '/\\  mariadb:/a\\    container_name: mariadb' docker-compose.yml
+  sed -i '/\\  redis:/a\\    container_name: redis' docker-compose.yml
+  sed -i '/\\  mailhog:/a\\    container_name: mailhog' docker-compose.yml
+  # sed -i '/db: {}/a\\  log: {}' docker-compose.yml
+  sed -i "s/develop/production/" .env.docker
+  sed -i "s/UTC/Asia\\/\\Ho_Chi_Minh/" .env.docker
   ###Get eth1 (bridged) IP Address
   ip=$(ifconfig eth1 | grep -Eo 'inet (addr:)?([0-9]*\\.){3}[0-9]*' | grep -Eo '([0-9]*\\.){3}[0-9]*')
-  sed -i "s/localhost:8000/$ip/" /home/vagrant/snipe-it/.env.docker
-  sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' /home/vagrant/snipe-it/.env.docker
-  sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
+  sed -i "s/localhost:8000/$ip/" .env.docker
+  # sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' .env.docker
+  sed -i '/APP_KEY=/d' .env.docker
   ### build the image snipeit before genera APP_KEY
-  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml run --rm snipeit
-  key=$(docker-compose -f /home/vagrant/snipe-it/docker-compose.yml run --rm snipeit php artisan key:generate --show )
-  echo $key
-  sed -i "/APP_URL/i APP_KEY=$key" /home/vagrant/snipe-it/.env.docker
-  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml down
-  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml up -d
-  chown vagrant:vagrant -R /home/vagrant/snipe-it
-  docker exec -it snipeit chown -R docker ./storage/logs/
-  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml stop
-  docker-compose -f /home/vagrant/snipe-it/docker-compose.yml up -d
+  docker-compose build
+  key=$(docker-compose run --rm snipeit php artisan key:generate --show)
+  timeout 10  echo $key
+  key=$(docker-compose run --rm snipeit php artisan key:generate --show)
+  sed -i "/APP_URL/i APP_KEY=$key" .env.docker
+  docker-compose down
+  docker-compose up -d
+  docker-compose stop
+  docker-compose up -d
+  docker container exec snipeit chown -R docker /var/www/html/storage/logs/
+  ##docker container exec snipeit yes | php artisan migrate:refresh --seed
   echo "SnipeIT has APP_KEY=:$key"
   echo "SnipeIT app can access via IP: $ip"
   SCRIPT
