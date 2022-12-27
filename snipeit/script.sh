@@ -48,12 +48,14 @@ sed -i 's/UTC/Asia\/\Ho_Chi_Minh/' /home/vagrant/snipe-it/.env.docker
 
 ### Get eth1 (bridged) IP Address
 ip="$(ifconfig eth1 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')"
-echo $ip
 sed -i "s/localhost:8000/$ip/" /home/vagrant/snipe-it/.env.docker
-sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' /home/vagrant/snipe-it/.env.docker
+# sed -i '/DB_CONNECTION=mysql/a DB_PORT=3306' /home/vagrant/snipe-it/.env.docker
 sed -i '/APP_KEY=/d' /home/vagrant/snipe-it/.env.docker
 ### Build the enviroment file
 docker-compose run --rm snipeit
+key=$(docker-compose run --rm snipeit php artisan key:generate --show )
+echo $key
+## In case of the APP_KEY can not generate, run twice
 key=$(docker-compose run --rm snipeit php artisan key:generate --show )
 echo $key
 sed -i "/APP_URL/i APP_KEY=$key" /home/vagrant/snipe-it/.env.docker
