@@ -1,0 +1,119 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# VMs predefined variables
+Vagrant.require_version ">= 2.2.8"
+HOST_NAME = "zabbix"
+IMAGE_NAME = "bento/ubuntu-20.04"
+RAM_SIZE = "4096"
+NUMBER_OF_CPU = 2
+CORE_OF_CPU = 2
+DISK_SIZE = "40GB"
+USER_NAME = "vagrant"
+USER_PASSWORD = "vagrant"
+################################################################
+### Main VM settings ###
+################################################################
+Vagrant.configure("2") do |config|
+    ##The higher is the prefer provider
+    config.vm.provider "virtualbox"
+    # config.vm.provider "vmware_workstation"
+    config.vm.define HOST_NAME do |h|                                        # Define the VM Hostname in the OS Manager
+      h.ssh.username = USER_NAME
+      h.ssh.password = USER_PASSWORD
+      h.vm.box = IMAGE_NAME
+      h.vm.hostname  = HOST_NAME
+      h.vm.disk :disk, size: DISK_SIZE, primary: true                        # Define the disk size
+      # h.vm.disk :disk, size: DISK_SIZE, primary: true
+      h.vm.network "public_network", bridge: 'enp5s0f1'                        # eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
+      # h.vm.network :forwarded_port, guest: 90, host: 9090
+      # h.vm.network :private_network, ip: "22.22.22.11"
+    end
+################################################################
+                      ## Provider setings ###
+################################################################
+## VMware Provider Settings
+['vmware_fusion', 'vmware_workstation', 'vmware_desktop'].each do |vmware|
+  config.vm.provider vmware do |v|
+      v.gui = true                                                          # Enable GUI management for VMware Desktop
+      v.vmx['displayName'] = HOST_NAME
+      v.vmx['memsize'] = RAM_SIZE
+      v.vmx['numvcpus'] = NUMBER_OF_CPU                                     # Two processor cores reserved for vm
+      v.vmx['cpuid.coresPerSocket'] = CORE_OF_CPU                           # One socket reserved for vm [1(socket)*2(CPU)=2(CPU)]
+      # v.vmx["ethernet0.addresstype"] = "generated"
+      # v.vmx["ethernet0.connectiontype"] = "nat"
+      # v.vmx["ethernet0.present"] = "TRUE"
+      # v.vmx["ethernet0.virtualdev"] = "e1000"
+      # # v.vmx["ethernet0.pcislotnumber"] = "32"
+      v.vmx["ethernet1.addresstype"] = "generated"
+      v.vmx["ethernet1.connectiontype"] = "bridged"
+      v.vmx["ethernet1.present"] = "TRUE"
+      v.vmx["ethernet1.virtualdev"] = "e1000"
+      # v.vmx["ethernet1.pcislotnumber"] = "33"
+      # v.vmx["ethernet2.addresstype"] = "generated"
+      # v.vmx["ethernet2.connectiontype"] = "bridged"
+      # v.vmx["ethernet2.present"] = "TRUE"
+      # v.vmx["ethernet2.virtualdev"] = "e1000"
+      # v.vmx['virtualHW.version'] = '16'                                   # choose 16 as 'vmware_desktop' version
+      # v.vmx['mks.enable3d'] = true                                        # enable 3D acceleration
+      # v.vmx['vmci0.present'] = true                                       # enable Virtual Machine Configuration Interface
+      # v.vmx['hpet0.present'] = true                                       # enable High Precision Event Timer
+      # v.vmx['virtualHW.productCompatibility'] = 'hosted'                  # select 'virtualHW.productCompatibility' as 'hosted' this simply means we work with VMware Fusion, Workstation, Player etc.
+      # v.vmx['powerType.powerOff'] = 'soft'                                # regular power settings
+      # v.vmx['powerType.powerOn'] = 'soft'                                 # regular power settings
+      # v.vmx['powerType.suspend'] = 'soft'                                 # regular power settings
+      # v.vmx['powerType.reset'] = 'soft'                                   # regular power settings
+      v.vmx['guestOS'] = 'ubuntu-64'                                        # select 'ubuntu-64' as 'guestOS' in VMware
+      # v.vmx['sound.autoDetect'] = true                                    # regular sound settings
+      # v.vmx['sound.fileName'] = '-1'                                      # regular sound settings
+      # v.vmx['sound.present'] = true                                       # regular sound settings
+      v.vmx['vcpu.hotadd'] = true                                           # enable VMware Hot Add for CPU
+      v.vmx['vhv.enable'] = true                                            # enable nested virtulazation on vm
+      v.vmx['mem.hotadd'] = true                                            # enable VMWare Hot Add for RAM
+      # v.vmx['nvme0.present'] = true                                       # select nvme for primary drive
+      # v.vmx['usb.present'] = true                                         # enable USB controller
+      # v.vmx['ehci.present'] = true                                        # enable USB controller
+      v.vmx['svga.graphicsMemoryKB'] = '262144'                             # reserve 256MB for GPU      cpuid.corespersocket = "2"      displayname = "zabbix"
+    end
+end
+################################################################
+## VirtualBox Provider Settings
+config.vm.provider 'virtualbox' do |vb|
+  vb.name = HOST_NAME
+  vb.customize ['modifyvm', :id, '--memory', RAM_SIZE]
+  vb.customize ['modifyvm', :id, '--cpus', NUMBER_OF_CPU]
+  # vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+  # vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+  # vb.customize ["modifyvm", :id, "--nic9", "hostonlynet", "--host-only-net9=HostOnly"]
+  vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]              # enable promisc
+  # vb.customize ['modifyvm', :id, '--nicpromisc1', 'allow-all', '--nicpromisc2', 'allow-all', '--nicpromisc3', 'allow-all']
+  vb.customize ['modifyvm', :id, '--nested-hw-virt', 'on']                  # enabel Nested VT-X/AMD-V
+  vb.customize ['modifyvm', :id, '--clipboard-mode', 'bidirectional']       # enable clipboard mode copy
+  vb.customize ['modifyvm', :id, '--draganddrop', 'bidirectional']          # enable draganddrop option
+  vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+  vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+  vb.customize ["modifyvm", :id, "--uart1", "0x3F8", "4"]                   # SSH timeout workaround for this case
+  vb.customize ["modifyvm", :id, "--uartmode1", "file", File::NULL]         # SSH timeout workaround for this case
+  # vb.gui = true                                                           # Display VM GUI, it better disable causes of annoying when close VirtualBox session
+end
+################################################################
+### Check if the vagrant plugins is installed
+plugins = ["vagrant-disksize", "vagrant-faster", "vagrant-vmware-desktop", "vagrant-winrm-syncedfolders", "vagrant-hosts-provisioner", "vagrant-sshfs", "vagrant-vbguest"]
+plugins.each do |plugin|
+  if !Vagrant.has_plugin?(plugin)
+    system "vagrant plugin install #{plugin}"
+  end
+end
+################################################################
+### Copy public key to VM
+  id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")                     #Copy the public key to VM
+  config.vm.provision "copy ssh public key", type: "shell",                 #Parse the public key with the VM authorized_keys
+    inline: "if grep -Fxq \"#{id_rsa_pub}\" /home/vagrant/.ssh/authorized_keys
+    then
+        echo ssh public key already exists
+    else
+      echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys
+    fi"
+################################################################
+### Provision by using shell script
+# config.vm.provision:shell, path: "script.sh"
+end
