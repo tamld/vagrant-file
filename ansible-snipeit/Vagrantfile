@@ -1,0 +1,75 @@
+Vagrant.require_version ">= 2.2.8"
+HOST_NAME = "snipeit"
+IMAGE_NAME = "bento/ubuntu-20.04"
+RAM_SIZE = "4096"
+NUMBER_OF_CPU = 2
+CORE_OF_CPU = 2
+DISK_SIZE = "40GB"
+USER_NAME = "vagrant"
+USER_PASSWORD = "vagrant"
+# End of predefine parameters
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.define HOST_NAME do |h|                                        # Define the VM Hostname in the OS Manager
+    h.ssh.username = USER_NAME
+    h.ssh.password = USER_PASSWORD
+    h.vm.box = IMAGE_NAME
+    h.vm.hostname  = HOST_NAME
+    h.vm.disk :disk, size: DISK_SIZE, primary: true 
+  end
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus = "2"
+    vb.name = HOST_NAME
+    vb.customize ['modifyvm', :id, '--memory', RAM_SIZE]
+    vb.customize ['modifyvm', :id, '--cpus', NUMBER_OF_CPU]
+    # vb.customize ['modifyvm', :id, '--natdnsproxy1', 'on']
+    # vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    # vb.customize ["modifyvm", :id, "--nic9", "hostonlynet", "--host-only-net9=HostOnly"]
+    vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]              # enable promisc
+    # vb.customize ['modifyvm', :id, '--nicpromisc1', 'allow-all', '--nicpromisc2', 'allow-all', '--nicpromisc3', 'allow-all']
+    vb.customize ['modifyvm', :id, '--nested-hw-virt', 'on']                  # enabel Nested VT-X/AMD-V
+    vb.customize ['modifyvm', :id, '--clipboard-mode', 'bidirectional']       # enable clipboard mode copy
+    vb.customize ['modifyvm', :id, '--draganddrop', 'bidirectional']          # enable draganddrop option
+    vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    vb.customize ["modifyvm", :id, "--uart1", "0x3F8", "4"]                   # SSH timeout workaround for this case
+    vb.customize ["modifyvm", :id, "--uartmode1", "file", File::NULL]         # SSH timeout workaround for this case
+    # vb.gui = true                                                           # Display VM GUI, it better disable causes of annoying when close VirtualBox session
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y software-properties-common
+    apt-add-repository --yes --update ppa:ansible/ansible
+    apt-get install -y ansible
+    apt-get install -y docker.io
+    apt-get install -y docker-compose
+  SHELL
+  
+  # Download the Snipe-IT playbook from GitHub
+  config.vm.provision "shell", inline: <<-SHELL
+    curl -o /home/vagrant/snipeit.yml https://raw.githubusercontent.com/snipe/snipe-it/master/ansible/ubuntu/snipeit.yml
+  SHELL
+
+  # Replace the app_url variable with the server IP address
+  config.vm.provision "shell", inline: <<-SHELL
+    IP_ADDRESS=`hostname -I | awk '{print $2}'`
+    sed -i "s/app_url: localhost/app_url: $IP_ADDRESS/g" /home/vagrant/snipeit.yml
+  SHELL
+
+  # Install Ansible if it is not already installed
+  config.vm.provision "shell", inline: <<-SHELL
+    if ! command -v ansible &> /dev/null
+    then
+        echo "Ansible is not installed. Installing Ansible..."
+        sudo apt-get update
+        sudo apt-get install -y ansible
+    fi
+  SHELL
+
+  # Run the playbook to install Snipe-IT
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "/home/vagrant/snipeit.yml"
+  end
+end

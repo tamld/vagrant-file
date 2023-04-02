@@ -1,0 +1,10 @@
+---
+- name: Download Snipe-IT from GitHub
+  hosts: all
+  become: true
+  tasks:
+    - name: Clone Snipe-IT from GitHub
+      git:
+        repo: https://github.com/snipe/snipe-it
+        dest: $HOME/snipe-it
+      tags: clone
