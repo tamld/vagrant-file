@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 # VMs predefined variables
 Vagrant.require_version ">= 2.2.8"
-HOST_NAME = "snipeit"
+HOST_NAME = "ubuntu-ansible"
 IMAGE_NAME = "bento/ubuntu-20.04"
 RAM_SIZE = "4096"
 NUMBER_OF_CPU = 2
@@ -14,6 +14,9 @@ USER_PASSWORD = "vagrant"
 ### Main VM settings ###
 ################################################################
 Vagrant.configure("2") do |config|
+    config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbook.yml"
+    end
     ##The higher is the prefer provider
     config.vm.provider "virtualbox"
     # config.vm.provider "vmware_workstation"
@@ -24,7 +27,7 @@ Vagrant.configure("2") do |config|
       h.vm.hostname  = HOST_NAME
       h.vm.disk :disk, size: DISK_SIZE, primary: true                        # Define the disk size
       # h.vm.disk :disk, size: DISK_SIZE, primary: true
-      h.vm.network "public_network", bridge: 'wlp1s0'                        # eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
+      h.vm.network "public_network", bridge: 'enp5s0f1'                        # eth0 is by default used by Vagrant for NAT (VirtualBox NAT networking mode)
       # h.vm.network :forwarded_port, guest: 90, host: 9090
       # h.vm.network :private_network, ip: "22.22.22.11"
     end
@@ -97,7 +100,7 @@ config.vm.provider 'virtualbox' do |vb|
 end
 ################################################################
 ### Check if the vagrant plugins is installed
-plugins = ["vagrant-disksize", "vagrant-faster", "vagrant-vmware-desktop", "vagrant-winrm-syncedfolders", "vagrant-hosts-provisioner", "vagrant-sshfs", "vagrant-vbguest"]
+plugins = ["vagrant-disksize", "vagrant-faster"]
 plugins.each do |plugin|
   if !Vagrant.has_plugin?(plugin)
     system "vagrant plugin install #{plugin}"
@@ -113,7 +116,5 @@ end
     else
       echo \"#{id_rsa_pub}\" >> /home/vagrant/.ssh/authorized_keys
     fi"
+    end
 ################################################################
-### Provision by using shell script
-# config.vm.provision:shell, path: "script.sh"
-# end

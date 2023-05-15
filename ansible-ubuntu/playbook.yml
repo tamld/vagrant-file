@@ -1,0 +1,25 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt: update_cache=yes
+
+    - name: Upgrade packages
+      apt: upgrade=yes
+
+    - name: Dist-upgrade packages
+      apt: upgrade=dist
+
+    - name: Install nano, neovim, curl, wget, bat, zsh
+      apt: name={{ item }} state=present
+      with_items:
+        - nano
+        - neovim
+        - curl
+        - wget
+        - bat
+        - git
+        - net-tools
+        - duf
+        - zsh
