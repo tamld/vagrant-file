@@ -1,7 +1,12 @@
 ---
 - hosts: all
+ # execute by root privilege
   become: true
-  tasks:
+  # become_user will specify which user would be execute these command
+  # execute by user deploy
+  # become_user: deploy
+  # Execute by $USER whom Ansible connects to
+  become_user: "{{ ansible_user }}" 
     - name: Update apt cache
       apt: update_cache=yes
 
@@ -11,7 +16,7 @@
     - name: Dist-upgrade packages
       apt: upgrade=dist
 
-    - name: Install nano, neovim, curl, wget, bat, zsh
+    - name: Install packages
       apt: name={{ item }} state=present
       with_items:
         - nano
@@ -21,5 +26,56 @@
         - bat
         - git
         - net-tools
-        - duf
-        - zsh
+        - fontconfig
+        - fzf
+        - tldr
+        - fonts-powerline
+    
+    - name: get zsh install bash script
+      get_url:
+        url: https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh
+        dest: /tmp/install-zsh.sh
+        mode: '0755'
+
+    - name: run zsh script
+      shell: /tmp/install-zsh.sh
+
+
+  #     - hosts: all
+  # become: true
+  # become_user: "{{ ansible_user }}"
+  # become_method: sudo
+  # tasks:
+  #   - name: Update apt cache
+  #     apt:
+  #       update_cache: yes
+  #   # - name: Upgrade packages
+  #   #   apt: upgrade=yes
+
+  #   # - name: Dist-upgrade packages
+  #   #   apt: upgrade=dist
+  #   - name: Install packages
+  #     apt:
+  #       name: "{{ item }}"
+  #       state: present
+  #     with_items:
+  #       - nano
+  #       - neovim
+  #       - curl
+  #       - wget
+  #       - bat
+  #       - git
+  #       - net-tools
+  #       - fontconfig
+  #       - fzf
+  #       - tldr
+  #       - fonts-powerline
+
+  #   - name: Get zsh install bash script
+  #     get_url:
+  #       url: https://gist.githubusercontent.com/tamld/7be6595bbffe5f9812ee448569c2b09c/raw/install-zsh.sh
+  #       dest: /tmp/install-zsh.sh
+  #       mode: '0755'
+
+  #   - name: Run zsh script
+  #     shell: /tmp/install-zsh.sh
