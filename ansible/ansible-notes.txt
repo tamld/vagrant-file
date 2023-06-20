@@ -1,0 +1,41 @@
+├── ansible-notes.txt
+├── ansible-snipeit
+│   ├── playbook.yml
+│   └── Vagrantfile
+└── ansible-ubuntu
+    ├── inventory.yml
+    ├── playbook.yml
+    └── Vagrantfile
+    
+Ansible là một công cụ dùng để quản lý cấu hình và triển khai phần mềm tự động. Nó được phát triển bởi Red Hat và được sử dụng rộng rãi trong việc quản lý hạ tầng ở quy mô lớn. Dưới đây là tổng quan về một số kiến thức cơ bản về Ansible:
+
+	Cách hoạt động: Ansible hoạt động dựa trên mô hình client-server và sử dụng SSH để kết nối và thực thi các lệnh từ máy chủ điều khiển đến các máy chủ đích.
+
+	- Playbook: Là một tập hợp các tác vụ được sắp xếp theo thứ tự nhất định, được viết bằng ngôn ngữ YAML, để thực hiện các công việc cụ thể trên một hoặc nhiều máy chủ.
+	- Inventory: Là một tập tin chứa các thông tin về các máy chủ, bao gồm địa chỉ IP, tên máy chủ và một số thông tin khác. Với file này, Ansible có thể quản lý các máy chủ và thực hiện các tác vụ trên chúng.
+	- Module: Là các tập lệnh được sử dụng để thực hiện các tác vụ cụ thể trên các máy chủ. Ansible có sẵn rất nhiều modules và người dùng có thể viết các module tùy chỉnh nếu cần thiết.
+	- Role: Là một khái niệm để quản lý các tác vụ cụ thể trên các máy chủ. Mỗi role có thể chứa một hoặc nhiều playbook, các file cấu hình và các tệp khác.
+	- Ansible Galaxy: Là một kho lưu trữ các roles và playbook tùy chỉnh được chia sẻ bởi cộng đồng Ansible.
+	- Jinja2: Là một ngôn ngữ template được sử dụng để tạo nội dung động trong các file cấu hình Ansible.
+	- Ansible Tower: Là một sản phẩm thương mại của Red Hat, cung cấp một giao diện đồ họa cho việc quản lý và triển khai Ansible.
+
+
+Ansible hoạt động dựa trên mô hình client-server, trong đó:
+
+	- Máy chủ điều khiển (control node) là nơi chứa các playbook, inventory, roles và các tệp cấu hình khác.
+	- Máy chủ đích (managed node) là nơi thực hiện các tác vụ được định nghĩa trong playbook.
+	- Ansible sử dụng SSH để kết nối và thực thi các lệnh từ máy chủ điều khiển đến các máy chủ đích.
+	- Các tác vụ được định nghĩa trong playbook, bao gồm các module được sử dụng để thực hiện các tác vụ cụ thể trên các máy chủ.
+	- Inventory chứa thông tin về các máy chủ được quản lý bởi Ansible, bao gồm địa chỉ IP, tên máy chủ và một số thông tin khác.
+	- Ansible Galaxy là nơi chứa các roles và playbook tùy chỉnh được chia sẻ bởi cộng đồng Ansible.
+	- Jinja2 được sử dụng để tạo nội dung động trong các file cấu hình Ansible.
+	- Ansible Tower cung cấp một giao diện đồ họa cho việc quản lý và triển khai Ansible, bao gồm các tính năng như quản lý quyền truy cập, lịch trình task và báo cáo.
+
+
+Cấu trúc của Ansible Galaxy bao gồm các thành phần chính sau:
+
+	- Roles: Là thành phần cơ bản của Ansible Galaxy, chứa các tệp YAML để mô tả các tác vụ cần thực hiện trên các managed node. Mỗi role bao gồm một thư mục chứa các tệp YAML và các thư mục con để chứa các tệp cấu hình, scripts hoặc các tệp khác cần thiết cho role đó.
+	- Collections: Là một khái niệm mới trong Ansible 2.10, giúp quản lý các role, module và plugin với quy mô lớn hơn. Collection được đóng gói và chia sẻ dưới dạng một đơn vị độc lập, có thể được cài đặt và cập nhật độc lập với bất kỳ role, module hoặc plugin nào khác.
+	- Galaxy API: Là một API RESTful để truy cập thông tin về các role, collection và nhiều hơn nữa từ Ansible Galaxy. API này cho phép người dùng tìm kiếm, tải về và quản lý các role và collection trong Galaxy.
+	- Galaxy CLI: Là một công cụ dòng lệnh để tương tác với Ansible Galaxy. Với Galaxy CLI, người dùng có thể tìm kiếm, tải về và quản lý các role và collection trong Galaxy.
+	- Galaxy Hub: Là một trang web được quản lý bởi Ansible, cung cấp một kho lưu trữ các role, collection và nhiều hơn nữa được chia sẻ bởi cộng đồng Ansible. Người dùng có thể tìm kiếm và tải về các role và collection từ Galaxy Hub.
