@@ -1,0 +1,2 @@
+VBoxManage list vms
+VBoxManage controlvm "Windows 10" acpipowerbutton && VBoxManage snapshot "Windows 10" restore "Snapshot 1"

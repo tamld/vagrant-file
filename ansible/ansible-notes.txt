@@ -6,7 +6,7 @@
     ├── inventory.yml
     ├── playbook.yml
     └── Vagrantfile
-    
+
 Ansible là một công cụ dùng để quản lý cấu hình và triển khai phần mềm tự động. Nó được phát triển bởi Red Hat và được sử dụng rộng rãi trong việc quản lý hạ tầng ở quy mô lớn. Dưới đây là tổng quan về một số kiến thức cơ bản về Ansible:
 
 	Cách hoạt động: Ansible hoạt động dựa trên mô hình client-server và sử dụng SSH để kết nối và thực thi các lệnh từ máy chủ điều khiển đến các máy chủ đích.
@@ -39,3 +39,36 @@ Cấu trúc của Ansible Galaxy bao gồm các thành phần chính sau:
 	- Galaxy API: Là một API RESTful để truy cập thông tin về các role, collection và nhiều hơn nữa từ Ansible Galaxy. API này cho phép người dùng tìm kiếm, tải về và quản lý các role và collection trong Galaxy.
 	- Galaxy CLI: Là một công cụ dòng lệnh để tương tác với Ansible Galaxy. Với Galaxy CLI, người dùng có thể tìm kiếm, tải về và quản lý các role và collection trong Galaxy.
 	- Galaxy Hub: Là một trang web được quản lý bởi Ansible, cung cấp một kho lưu trữ các role, collection và nhiều hơn nữa được chia sẻ bởi cộng đồng Ansible. Người dùng có thể tìm kiếm và tải về các role và collection từ Galaxy Hub.
+
+#############################################################################################################
+Ví dụ về Ansible Galaxy
+my_role/
+├── defaults/
+│   └── main.yml
+├── files/
+│   └── my_file.txt
+├── handlers/
+│   └── main.yml
+├── meta/
+│   └── main.yml
+├── README.md
+├── tasks/
+│   └── main.yml
+├── templates/
+│   └── my_template.j2
+├── tests/
+│   ├── inventory
+│   └── test.yml
+└── vars/
+    └── main.yml
+
+	- my_role/: Thư mục chứa toàn bộ role.
+	- defaults/main.yml: Tệp chứa các biến mặc định cho role.
+	- files/: Thư mục chứa các tệp tin hoặc thư mục cần được sao chép đến managed node trong quá trình triển khai.
+	- handlers/main.yml: Tệp chứa các handlers được sử dụng trong playbook.
+	- meta/main.yml: Tệp chứa các thông tin meta về role, bao gồm tên, mô tả và các phụ thuộc của role.
+	- README.md: Tệp mô tả role, bao gồm các hướng dẫn sử dụng và các thông tin khác.
+	- tasks/main.yml: Tệp chứa các tác vụ của role.
+	- templates/: Thư mục chứa các mẫu Jinja2 để tạo nội dung động trong các tệp cấu hình.
+	- tests/: Thư mục chứa các tệp để kiểm tra role.
+	- vars/main.yml: Tệp chứa các biến được sử dụng trong role    
